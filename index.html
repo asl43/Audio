@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Áudio Completo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        textarea, select, input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            resize: vertical;
+        }
+
+        textarea {
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        textarea:focus, select:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .audio-player {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .audio-player audio {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .recording-status {
+            display: none;
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 15px 0;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .saved-audios {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .saved-audios h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .audio-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .audio-info {
+            flex: 1;
+        }
+
+        .audio-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .audio-date {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .audio-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .transcription-result {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .voice-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .voice-control {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .voice-control label {
+            font-size: 14px;
+            margin-bottom: 0;
+            color: #555;
+        }
+
+        .voice-control input, .voice-control select {
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .gender-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .gender-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .gender-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .gender-btn:hover:not(.active) {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .voice-effects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .effect-btn {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .effect-btn.active {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-color: #28a745;
+        }
+
+        .effect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .waveform-visualizer {
+            width: 100%;
+            height: 60px;
+            background: #2c3e50;
+            border-radius: 10px;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .waveform-bars {
+            display: flex;
+            align-items: end;
+            height: 100%;
+            padding: 5px;
+            gap: 2px;
+        }
+
+        .waveform-bar {
+            flex: 1;
+            background: linear-gradient(to top, #3498db, #2ecc71);
+            border-radius: 1px;
+            transition: height 0.1s ease;
+        }
+
+        .mp3-quality {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .quality-btn {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .quality-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .speaking-animation {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            margin: 15px 0;
+        }
+
+        .speaking-animation.active {
+            display: block;
+            animation: speakPulse 1s infinite alternate;
+        }
+
+        @keyframes speakPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.02); opacity: 1; }
+        }
+
+        .voice-wave {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            margin: 10px 0;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: white;
+            border-radius: 2px;
+            animation: waveAnimation 1.2s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.5s; }
+
+        @keyframes waveAnimation {
+            0%, 100% { height: 8px; }
+            50% { height: 24px; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .audio-item {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .audio-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .voice-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Sistema de Áudio Completo</h1>
+            <p>Converta texto em áudio MP3, grave, transcreva e gerencie seus arquivos de áudio</p>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab('tts', this)">📢 Texto para Áudio</button>
+                <button class="tab-button" onclick="openTab('record', this)">🎤 Gravar Áudio</button>
+                <button class="tab-button" onclick="openTab('transcribe', this)">📝 Transcrever Áudio</button>
+                <button class="tab-button" onclick="openTab('manage', this)">💾 Gerenciar Áudios</button>
+            </div>
+
+            <div id="tts" class="tab-content active">
+                <h2>📢 Converter Texto em Áudio MP3</h2>
+                <div class="form-group">
+                    <label for="textInput">Digite ou cole o texto:</label>
+                    <textarea id="textInput" placeholder="Digite ou cole seu texto aqui..."></textarea>
+                </div>
+
+                <div class="voice-controls">
+                    <div class="voice-control">
+                        <label>Gênero da Voz:</label>
+                        <div class="gender-selector">
+                            <button class="gender-btn active" onclick="selectGender('male', this)">
+                                👨 Masculina
+                            </button>
+                            <button class="gender-btn" onclick="selectGender('female', this)">
+                                👩 Feminina
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="voice-control">
+                        <label for="voiceSelect">Voz Específica:</label>
+                        <select id="voiceSelect"></select>
+                    </div>
+
+                    <div class="voice-control">
+                        <label for="rateInput">Velocidade: <span id="rateValue">1.0x</span></label>
+                        <input type="range" id="rateInput" min="0.5" max="2.5" value="1" step="0.1">
+                    </div>
+
+                    <div class="voice-control">
+                        <label for="pitchInput">Tom: <span id="pitchValue">1.0</span></label>
+                        <input type="range" id="pitchInput" min="0.5" max="2" value="1" step="0.1">
+                    </div>
+
+                    <div class="voice-control">
+                        <label for="volumeInput">Volume: <span id="volumeValue">100%</span></label>
+                        <input type="range" id="volumeInput" min="0" max="1" value="1" step="0.1">
+                    </div>
+
+                    <div class="voice-control">
+                        <label>Qualidade MP3:</label>
+                        <div class="mp3-quality">
+                            <button class="quality-btn" onclick="selectQuality('low', this)">128kbps</button>
+                            <button class="quality-btn active" onclick="selectQuality('medium', this)">192kbps</button>
+                            <button class="quality-btn" onclick="selectQuality('high', this)">320kbps</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Efeitos de Voz:</label>
+                    <div class="voice-effects">
+                        <button class="effect-btn" onclick="toggleEffect('robot', this)">🤖 Robô</button>
+                        <button class="effect-btn" onclick="toggleEffect('echo', this)">🔊 Eco</button>
+                        <button class="effect-btn" onclick="toggleEffect('whisper', this)">🤫 Sussurro</button>
+                        <button class="effect-btn" onclick="toggleEffect('dramatic', this)">🎭 Dramático</button>
+                        <button class="effect-btn" onclick="toggleEffect('cheerful', this)">😊 Alegre</button>
+                        <button class="effect-btn" onclick="toggleEffect('serious', this)">😐 Sério</button>
+                    </div>
+                </div>
+
+                <div class="speaking-animation" id="speakingAnimation">
+                    <h3>🎙️ Falando...</h3>
+                    <div class="voice-wave">
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                    </div>
+                    <p>Reproduzindo seu texto com animações de voz</p>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="speakText()">🔊 Reproduzir</button>
+                    <button class="btn btn-secondary" onclick="stopSpeech()">⏹️ Parar</button>
+                    <button class="btn btn-success" onclick="generateAndSaveMP3()">💾 Gerar MP3</button>
+                </div>
+
+                <div class="waveform-visualizer" id="waveform" style="display: none;">
+                    <div class="waveform-bars" id="waveformBars"></div>
+                </div>
+
+                <div id="ttsPlayer" class="audio-player" style="display: none;">
+                    <p>Áudio MP3 gerado:</p>
+                    <audio controls></audio>
+                    <div class="controls">
+                        <button class="btn btn-success" onclick="downloadCurrentMP3()">⬇️ Download MP3</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="record" class="tab-content">
+                <h2>🎤 Gravar Áudio em MP3</h2>
+                
+                <div class="voice-control">
+                    <label>Qualidade de Gravação:</label>
+                    <div class="mp3-quality">
+                        <button class="quality-btn" onclick="selectRecordQuality('low', this)">128kbps</button>
+                        <button class="quality-btn active" onclick="selectRecordQuality('medium', this)">192kbps</button>
+                        <button class="quality-btn" onclick="selectRecordQuality('high', this)">320kbps</button>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-danger" id="startRecordBtn" onclick="startRecording()">⏺️ Iniciar Gravação</button>
+                    <button class="btn btn-secondary" id="stopRecordBtn" onclick="stopRecording()" disabled>⏹️ Parar Gravação</button>
+                    <button class="btn btn-success" onclick="saveRecordedMP3()" id="saveRecordBtn" style="display: none;">💾 Salvar MP3</button>
+                </div>
+
+                <div id="recordingStatus" class="recording-status">
+                    🔴 Gravando... Fale agora!
+                </div>
+
+                <div class="waveform-visualizer" id="recordWaveform" style="display: none;">
+                    <div class="waveform-bars" id="recordWaveformBars"></div>
+                </div>
+
+                <div id="recordPlayer" class="audio-player" style="display: none;">
+                    <p>Gravação em MP3:</p>
+                    <audio controls></audio>
+                    <div class="controls">
+                        <button class="btn btn-success" onclick="downloadRecordedMP3()">⬇️ Download MP3</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="transcribe" class="tab-content">
+                <h2>📝 Transcrever Áudio</h2>
+                <div class="form-group">
+                    <label for="audioFile">Selecione um arquivo de áudio (MP3, WAV, OGG):</label>
+                    <input type="file" id="audioFile" accept="audio/*">
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="transcribeAudio()">🎯 Transcrever</button>
+                    <button class="btn btn-success" onclick="convertTranscriptionToMP3()" id="convertTranscriptionBtn" style="display: none;">🔊 Converter em MP3</button>
+                </div>
+
+                <div id="transcriptionLoading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Transcrevendo áudio... Aguarde.</p>
+                </div>
+
+                <div id="transcriptionResult" class="transcription-result" style="display: none;">
+                    <h3>📄 Transcrição:</h3>
+                    <p id="transcriptionText"></p>
+                    <div class="controls">
+                        <button class="btn btn-secondary" onclick="copyTranscription()">📋 Copiar Texto</button>
+                        <button class="btn btn-primary" onclick="editTranscription()">✏️ Editar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="manage" class="tab-content">
+                <h2>💾 Áudios MP3 Salvos</h2>
+                <div class="controls">
+                    <button class="btn btn-danger" onclick="clearAllAudios()">🗑️ Limpar Todos</button>
+                    <button class="btn btn-primary" onclick="exportAllMP3s()">📤 Exportar Todos MP3</button>
+                    <button class="btn btn-secondary" onclick="importMP3s()">📥 Importar MP3s</button>
+                </div>
+
+                <div id="savedAudiosList" class="saved-audios">
+                    <p>Nenhum áudio MP3 salvo ainda.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
+    
+    <script>
+        // Variáveis globais
+        let mediaRecorder;
+        let audioChunks = [];
+        let currentAudioBlob = null;
+        let savedAudios = JSON.parse(localStorage.getItem('savedAudios') || '[]');
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        let currentTranscription = '';
+        let selectedGender = 'male';
+        let selectedEffects = [];
+        let mp3Quality = 'medium';
+        let recordQuality = 'medium';
+        let currentMP3Blob = null;
+
+        // Configurações de qualidade MP3
+        const qualitySettings = {
+            low: { bitRate: 128, sampleRate: 44100 },
+            medium: { bitRate: 192, sampleRate: 44100 },
+            high: { bitRate: 320, sampleRate: 44100 }
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadVoices();
+            updateSavedAudiosList();
+            setupRangeInputs();
+            createWaveformBars();
+        });
+
+        // Configurar inputs de range
+        function setupRangeInputs() {
+            document.getElementById('rateInput').addEventListener('input', function() {
+                document.getElementById('rateValue').textContent = this.value + 'x';
+            });
+
+            document.getElementById('pitchInput').addEventListener('input', function() {
+                document.getElementById('pitchValue').textContent = this.value;
+            });
+
+            document.getElementById('volumeInput').addEventListener('input', function() {
+                document.getElementById('volumeValue').textContent = Math.round(this.value * 100) + '%';
+            });
+        }
+
+        // Criar barras do visualizador de onda
+        function createWaveformBars() {
+            const containers = ['waveformBars', 'recordWaveformBars'];
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '';
+                    for (let i = 0; i < 50; i++) {
+                        const bar = document.createElement('div');
+                        bar.className = 'waveform-bar';
+                        bar.style.height = '5px';
+                        container.appendChild(bar);
+                    }
+                }
+            });
+        }
+
+        // Animar visualizador de onda
+        function animateWaveform(containerId, isActive) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const bars = container.querySelectorAll('.waveform-bar');
+            
+            if (isActive) {
+                const animate = () => {
+                    if ((containerId === 'waveformBars' && speechSynthesis.speaking) ||
+                        (containerId === 'recordWaveformBars' && mediaRecorder && mediaRecorder.state === 'recording')) {
+                        bars.forEach((bar, index) => {
+                            const height = Math.random() * 40 + 5;
+                            bar.style.height = height + 'px';
+                        });
+                        setTimeout(animate, 100);
+                    } else {
+                        // Reseta a altura das barras quando a animação para
+                        bars.forEach(bar => bar.style.height = '5px');
+                    }
+                };
+                animate();
+            } else {
+                bars.forEach(bar => {
+                    bar.style.height = '5px';
+                });
+            }
+        }
+
+        // Carregar vozes disponíveis
+        function loadVoices() {
+            const voiceSelect = document.getElementById('voiceSelect');
+            const voices = speechSynthesis.getVoices();
+            
+            voiceSelect.innerHTML = '';
+            
+            const filteredVoices = voices.filter(voice => {
+                const isMale = voice.name.toLowerCase().includes('male') || 
+                              voice.name.toLowerCase().includes('masculin') ||
+                              voice.name.toLowerCase().includes('man') ||
+                              voice.name.toLowerCase().includes('david') ||
+                              voice.name.toLowerCase().includes('mark');
+                              
+                const isFemale = voice.name.toLowerCase().includes('female') || 
+                               voice.name.toLowerCase().includes('feminin') ||
+                               voice.name.toLowerCase().includes('woman') ||
+                               voice.name.toLowerCase().includes('zira') ||
+                               voice.name.toLowerCase().includes('samantha');
+                
+                if (selectedGender === 'male') return isMale || (!isMale && !isFemale);
+                return isFemale || (!isMale && !isFemale);
+            });
+            
+            filteredVoices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = voices.indexOf(voice);
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (voice.lang.includes('pt')) {
+                    option.selected = true;
+                }
+                voiceSelect.appendChild(option);
+            });
+            
+            if (filteredVoices.length === 0) {
+                voices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    if (voice.lang.includes('pt')) {
+                        option.selected = true;
+                    }
+                    voiceSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Recarregar vozes quando disponíveis
+        speechSynthesis.onvoiceschanged = loadVoices;
+
+        // Selecionar gênero da voz
+        function selectGender(gender, btn) {
+            selectedGender = gender;
+            document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadVoices();
+        }
+
+        // Selecionar qualidade MP3
+        function selectQuality(quality, btn) {
+            mp3Quality = quality;
+            document.querySelectorAll('#tts .quality-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Selecionar qualidade de gravação
+        function selectRecordQuality(quality, btn) {
+            recordQuality = quality;
+            document.querySelectorAll('#record .quality-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Alternar efeitos de voz
+        function toggleEffect(effect, btn) {
+            const index = selectedEffects.indexOf(effect);
+            if (index > -1) {
+                selectedEffects.splice(index, 1);
+                btn.classList.remove('active');
+            } else {
+                selectedEffects.push(effect);
+                btn.classList.add('active');
+            }
+        }
+
+        // Abrir abas
+        function openTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            document.getElementById(tabId).style.display = 'block';
+            
+            document.querySelectorAll('.tab-button').forEach(b => {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+        
+        // Função de efeito de voz (simulação)
+        function applyEffects(text) {
+            let processedText = text;
+            if (selectedEffects.includes('robot')) {
+                // Simulação simples de voz de robô (lenta e com pausas)
+                processedText = processedText.split('').join('. ').toUpperCase();
+            }
+            if (selectedEffects.includes('echo')) {
+                // Simulação de eco, adicionando repetição no final da palavra
+                processedText = processedText.replace(/(\w+)$/g, '$1...$1...');
+            }
+            // Outros efeitos seriam implementados com SSML (Speech Synthesis Markup Language)
+            return processedText;
+        }
+
+        // Reproduzir texto para áudio
+        function speakText() {
+            stopSpeech();
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('Por favor, digite algum texto para converter.');
+                return;
+            }
+
+            const processedText = applyEffects(text);
+            const utterance = new SpeechSynthesisUtterance(processedText);
+            const voices = speechSynthesis.getVoices();
+            const voiceIndex = document.getElementById('voiceSelect').value;
+            
+            utterance.voice = voices[voiceIndex];
+            utterance.rate = document.getElementById('rateInput').value;
+            utterance.pitch = document.getElementById('pitchInput').value;
+            utterance.volume = document.getElementById('volumeInput').value;
+
+            utterance.onstart = () => {
+                document.getElementById('speakingAnimation').style.display = 'block';
+                document.getElementById('waveform').style.display = 'block';
+                animateWaveform('waveformBars', true);
+            };
+
+            utterance.onend = () => {
+                document.getElementById('speakingAnimation').style.display = 'none';
+                animateWaveform('waveformBars', false);
+            };
+
+            utterance.onerror = (event) => {
+                console.error('Erro na síntese de voz:', event.error);
+                document.getElementById('speakingAnimation').style.display = 'none';
+                alert('Ocorreu um erro na síntese de voz.');
+            };
+
+            currentUtterance = utterance;
+            speechSynthesis.speak(utterance);
+        }
+
+        // Parar reprodução
+        function stopSpeech() {
+            if (currentUtterance && speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            document.getElementById('speakingAnimation').style.display = 'none';
+            animateWaveform('waveformBars', false);
+        }
+
+        // Gerar e salvar MP3 do texto
+        function generateAndSaveMP3() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('Por favor, digite algum texto para converter.');
+                return;
+            }
+
+            // O navegador não oferece uma API nativa e confiável para capturar o áudio gerado pelo SpeechSynthesis.
+            // Para fazer isso, seria necessário usar uma biblioteca ou um serviço de terceiros.
+            // Esta função é uma simulação para fins de demonstração.
+            alert('A função de gerar MP3 do texto para fala não está disponível de forma confiável em todos os navegadores. Usando um placeholder.');
+            
+            // Simulação de conversão para MP3
+            const dummyBlob = new Blob(['Dummy MP3 Data'], { type: 'audio/mp3' });
+            currentMP3Blob = dummyBlob;
+            const audioPlayer = document.querySelector('#ttsPlayer audio');
+            audioPlayer.src = URL.createObjectURL(dummyBlob);
+            document.getElementById('ttsPlayer').style.display = 'block';
+            saveAudio(dummyBlob, 'tts');
+            alert('Áudio MP3 gerado e salvo!');
+        }
+
+        // Iniciar gravação de áudio
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    // Tenta o formato padrão do navegador, que geralmente é WebM ou Ogg
+                    const options = { mimeType: 'audio/webm' };
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options.mimeType = 'audio/ogg';
+                    }
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                         alert('Nenhum formato de gravação WebM ou Ogg é suportado.');
+                         return;
+                    }
+
+                    mediaRecorder = new MediaRecorder(stream, options);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: options.mimeType });
+                        
+                        // Converte o áudio gravado (normalmente WebM/Ogg) para MP3
+                        convertToMP3(audioBlob, recordQuality, mp3Blob => {
+                            currentAudioBlob = mp3Blob;
+                            const audioPlayer = document.querySelector('#recordPlayer audio');
+                            audioPlayer.src = URL.createObjectURL(mp3Blob);
+                            document.getElementById('recordPlayer').style.display = 'block';
+                            document.getElementById('saveRecordBtn').style.display = 'inline-flex';
+                            
+                            stream.getTracks().forEach(track => track.stop());
+                        });
+                    };
+
+                    mediaRecorder.start();
+                    document.getElementById('recordingStatus').style.display = 'block';
+                    document.getElementById('recordWaveform').style.display = 'block';
+                    document.getElementById('startRecordBtn').disabled = true;
+                    document.getElementById('stopRecordBtn').disabled = false;
+                    animateWaveform('recordWaveformBars', true);
+                })
+                .catch(err => {
+                    console.error('Erro ao acessar o microfone:', err);
+                    alert('Erro ao acessar o microfone. Verifique as permissões do navegador.');
+                });
+        }
+
+        // Parar gravação de áudio
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            document.getElementById('recordingStatus').style.display = 'none';
+            document.getElementById('startRecordBtn').disabled = false;
+            document.getElementById('stopRecordBtn').disabled = true;
+            animateWaveform('recordWaveformBars', false);
+        }
+
+        // Função para converter para MP3 usando LAME.js
+        function convertToMP3(audioBlob, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const arrayBuffer = event.target.result;
+                const { bitRate, sampleRate } = qualitySettings[quality];
+
+                // Decodifica o áudio para PCM (necessário para o LAME.js)
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.decodeAudioData(arrayBuffer).then(audioBuffer => {
+                    const pcmData = audioBuffer.getChannelData(0);
+                    const samples = new Int16Array(pcmData.length);
+                    
+                    // Converte float32 para int16
+                    for (let i = 0; i < pcmData.length; i++) {
+                        samples[i] = pcmData[i] * 32767;
+                    }
+
+                    const mp3encoder = new lamejs.Mp3Encoder(1, audioBuffer.sampleRate, bitRate);
+                    const mp3Data = [];
+                    const samplesPerFrame = 1152;
+                    
+                    for (let i = 0; i < samples.length; i += samplesPerFrame) {
+                        const sampleChunk = samples.subarray(i, i + samplesPerFrame);
+                        const mp3buf = mp3encoder.encodeBuffer(sampleChunk);
+                        if (mp3buf.length > 0) {
+                            mp3Data.push(new Int8Array(mp3buf));
+                        }
+                    }
+                    const mp3buf = mp3encoder.flush();
+                    if (mp3buf.length > 0) {
+                        mp3Data.push(new Int8Array(mp3buf));
+                    }
+                    
+                    const mp3Blob = new Blob(mp3Data, { type: 'audio/mp3' });
+                    callback(mp3Blob);
+                }).catch(err => {
+                    console.error('Erro ao decodificar áudio:', err);
+                    alert('Erro ao converter para MP3. Verifique o formato do arquivo de origem.');
+                });
+            };
+            reader.readAsArrayBuffer(audioBlob);
+        }
+
+        // Transcrever áudio (simulação)
+        function transcribeAudio() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Por favor, selecione um arquivo de áudio.');
+                return;
+            }
+
+            document.getElementById('transcriptionResult').style.display = 'none';
+            document.getElementById('transcriptionLoading').style.display = 'block';
+
+            // ATENÇÃO: A transcrição de áudio em tempo real ou de arquivos
+            // é uma tarefa complexa que requer uma API de serviço de voz (como
+            // a API do Google Speech-to-Text, OpenAI Whisper, etc.)
+            // A seguir, temos uma SIMULAÇÃO para fins de demonstração.
+
+            setTimeout(() => {
+                const dummyText = "Esta é uma transcrição de exemplo. O áudio selecionado foi processado e este é o texto resultante. Ele pode ser copiado, editado ou convertido de volta para áudio.";
+                currentTranscription = dummyText;
+                document.getElementById('transcriptionText').textContent = dummyText;
+                document.getElementById('transcriptionLoading').style.display = 'none';
+                document.getElementById('transcriptionResult').style.display = 'block';
+                document.getElementById('convertTranscriptionBtn').style.display = 'inline-flex';
+            }, 2000);
+        }
+
+        // Copiar transcrição
+        function copyTranscription() {
+            const text = document.getElementById('transcriptionText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Texto copiado para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar texto:', err);
+            });
+        }
+        
+        // Editar transcrição
+        function editTranscription() {
+            const currentText = document.getElementById('transcriptionText').textContent;
+            const newText = prompt('Edite a transcrição:', currentText);
+            if (newText !== null) {
+                currentTranscription = newText;
+                document.getElementById('transcriptionText').textContent = newText;
+            }
+        }
+        
+        // Converter transcrição para MP3
+        function convertTranscriptionToMP3() {
+            const textToConvert = currentTranscription || document.getElementById('transcriptionText').textContent;
+            if (!textToConvert) {
+                alert('Nenhum texto para converter. Transcreva um áudio primeiro.');
+                return;
+            }
+            document.getElementById('textInput').value = textToConvert;
+            openTab('tts', document.querySelector('.tab-button[onclick*="tts"]'));
+            
+            // Gerar o MP3 do texto transcrito automaticamente
+            speakText(); // Apenas reproduz, não salva de forma confiável
+            alert('Texto transcrito copiado para a aba "Texto para Áudio". Clique em "Gerar MP3" para salvar.');
+        }
+
+        // Salvar áudio no armazenamento local
+        function saveAudio(blob, type) {
+            // ATENÇÃO: O armazenamento de blobs grandes em localStorage pode causar erros.
+            // Considere usar IndexedDB para grandes arquivos de áudio.
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64data = reader.result;
+                const audio = {
+                    id: Date.now(),
+                    name: `Audio ${savedAudios.length + 1} (${type})`,
+                    date: new Date().toLocaleDateString('pt-BR'),
+                    blob: base64data,
+                    type: type
+                };
+                savedAudios.push(audio);
+                localStorage.setItem('savedAudios', JSON.stringify(savedAudios));
+                updateSavedAudiosList();
+            };
+            reader.readAsDataURL(blob);
+        }
+
+        // Salvar MP3 gravado
+        function saveRecordedMP3() {
+            if (currentAudioBlob) {
+                saveAudio(currentAudioBlob, 'record');
+                alert('Gravação salva com sucesso!');
+                document.getElementById('saveRecordBtn').style.display = 'none';
+            } else {
+                alert('Nenhum áudio gravado para salvar.');
+            }
+        }
+        
+        // Atualizar lista de áudios salvos
+        function updateSavedAudiosList() {
+            const list = document.getElementById('savedAudiosList');
+            if (savedAudios.length === 0) {
+                list.innerHTML = '<p>Nenhum áudio MP3 salvo ainda.</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            savedAudios.forEach(audio => {
+                const item = document.createElement('div');
+                item.className = 'audio-item';
+                item.innerHTML = `
+                    <div class="audio-info">
+                        <div class="audio-title">${audio.name}</div>
+                        <div class="audio-date">${audio.date}</div>
+                    </div>
+                    <div class="audio-actions">
+                        <button class="btn btn-primary" onclick="playSavedAudio('${audio.id}')">▶️ Play</button>
+                        <button class="btn btn-secondary" onclick="downloadSavedAudio('${audio.id}')">⬇️ Download</button>
+                        <button class="btn btn-danger" onclick="deleteSavedAudio('${audio.id}')">🗑️ Excluir</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Reproduzir áudio salvo
+        function playSavedAudio(id) {
+            const audio = savedAudios.find(a => a.id == id);
+            if (audio) {
+                const audioBlob = dataURLtoBlob(audio.blob);
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const tempAudio = new Audio(audioUrl);
+                tempAudio.play();
+                tempAudio.onended = () => {
+                    URL.revokeObjectURL(audioUrl);
+                };
+            }
+        }
+
+        // Baixar áudio salvo
+        function downloadSavedAudio(id) {
+            const audio = savedAudios.find(a => a.id == id);
+            if (audio) {
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = audio.blob;
+                a.download = `${audio.name.replace(/ /g, '_')}.mp3`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+
+        // Deletar áudio salvo
+        function deleteSavedAudio(id) {
+            if (confirm('Tem certeza de que deseja excluir este áudio?')) {
+                savedAudios = savedAudios.filter(a => a.id != id);
+                localStorage.setItem('savedAudios', JSON.stringify(savedAudios));
+                updateSavedAudiosList();
+            }
+        }
+
+        // Limpar todos os áudios
+        function clearAllAudios() {
+            if (confirm('Tem certeza de que deseja limpar todos os áudios salvos? Esta ação não pode ser desfeita.')) {
+                savedAudios = [];
+                localStorage.removeItem('savedAudios');
+                updateSavedAudiosList();
+                alert('Todos os áudios foram removidos.');
+            }
+        }
+
+        // Baixar MP3 gerado por TTS
+        function downloadCurrentMP3() {
+            if (currentMP3Blob) {
+                const url = URL.createObjectURL(currentMP3Blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'audio_tts.mp3';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                alert('Nenhum áudio para download.');
+            }
+        }
+
+        // Baixar MP3 gravado
+        function downloadRecordedMP3() {
+            if (currentAudioBlob) {
+                const url = URL.createObjectURL(currentAudioBlob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'audio_gravado.mp3';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                alert('Nenhum áudio para download.');
+            }
+        }
+
+        // Exportar todos os MP3s (simulação)
+        function exportAllMP3s() {
+            if (savedAudios.length === 0) {
+                alert('Nenhum áudio para exportar.');
+                return;
+            }
+            alert('A funcionalidade de exportação de todos os MP3s como um único arquivo ZIP seria implementada aqui, mas requer uma biblioteca de terceiros.');
+        }
+
+        // Importar MP3s
+        function importMP3s() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'audio/mp3';
+            input.multiple = true;
+            input.style.display = 'none';
+            document.body.appendChild(input);
+
+            input.onchange = (event) => {
+                const files = event.target.files;
+                if (files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            const audio = {
+                                id: Date.now() + i,
+                                name: file.name.replace('.mp3', ''),
+                                date: new Date().toLocaleDateString('pt-BR'),
+                                blob: reader.result,
+                                type: 'imported'
+                            };
+                            savedAudios.push(audio);
+                            localStorage.setItem('savedAudios', JSON.stringify(savedAudios));
+                            updateSavedAudiosList();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                    alert('Áudios importados com sucesso!');
+                }
+                document.body.removeChild(input);
+            };
+            input.click();
+        }
+        
+        // Função auxiliar para converter Data URL para Blob
+        function dataURLtoBlob(dataurl) {
+            const arr = dataurl.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        }
+    </script>
+</body>
+</html>
