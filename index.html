@@ -118,6 +118,13 @@
             outline: none;
             border-color: #667eea;
         }
+        
+        input[type="text"] {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+        }
 
         .controls {
             display: flex;
@@ -201,6 +208,17 @@
         .recording-status {
             display: none;
             background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 15px 0;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        .mic-status {
+            display: none;
+            background: #28a745;
             color: white;
             padding: 10px 20px;
             border-radius: 25px;
@@ -418,6 +436,22 @@
             color: white;
             border-color: #667eea;
         }
+        
+        #generatorOptions {
+            margin-top: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        #generatorOptions > div {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        #generatorOptions > div.active {
+            display: block;
+        }
 
         .speaking-animation {
             display: none;
@@ -523,30 +557,18 @@
             <div class="tabs">
                 <button class="tab-button active" onclick="openTab('tts', this)">📢 Texto para Áudio</button>
                 <button class="tab-button" onclick="openTab('record', this)">🎤 Gravar Áudio</button>
-                <button class="tab-button" onclick="openTab('transcribe', this)">📝 Transcrever Áudio</button>
+                <button class="tab-button" onclick="openTab('audio-generator', this)">⚙️ Gerador de Áudios</button>
                 <button class="tab-button" onclick="openTab('manage', this)">💾 Gerenciar Áudios</button>
             </div>
 
             <div id="tts" class="tab-content active">
                 <h2>📢 Converter Texto em Áudio MP3</h2>
                 <div class="form-group">
-                    <label for="textInput">Digite ou cole o texto:</label>
-                    <textarea id="textInput" placeholder="Digite ou cole seu texto aqui..."></textarea>
+                    <label for="textInput">Digite ou fale o texto:</label>
+                    <textarea id="textInput" placeholder="Digite ou fale seu texto aqui..."></textarea>
                 </div>
-
+                
                 <div class="voice-controls">
-                    <div class="voice-control">
-                        <label>Gênero da Voz:</label>
-                        <div class="gender-selector">
-                            <button class="gender-btn active" onclick="selectGender('male', this)">
-                                👨 Masculina
-                            </button>
-                            <button class="gender-btn" onclick="selectGender('female', this)">
-                                👩 Feminina
-                            </button>
-                        </div>
-                    </div>
-
                     <div class="voice-control">
                         <label for="voiceSelect">Voz Específica:</label>
                         <select id="voiceSelect"></select>
@@ -561,35 +583,9 @@
                         <label for="pitchInput">Tom: <span id="pitchValue">1.0</span></label>
                         <input type="range" id="pitchInput" min="0.5" max="2" value="1" step="0.1">
                     </div>
-
-                    <div class="voice-control">
-                        <label for="volumeInput">Volume: <span id="volumeValue">100%</span></label>
-                        <input type="range" id="volumeInput" min="0" max="1" value="1" step="0.1">
-                    </div>
-
-                    <div class="voice-control">
-                        <label>Qualidade MP3:</label>
-                        <div class="mp3-quality">
-                            <button class="quality-btn" onclick="selectQuality('low', this)">128kbps</button>
-                            <button class="quality-btn active" onclick="selectQuality('medium', this)">192kbps</button>
-                            <button class="quality-btn" onclick="selectQuality('high', this)">320kbps</button>
-                        </div>
-                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Efeitos de Voz:</label>
-                    <div class="voice-effects">
-                        <button class="effect-btn" onclick="toggleEffect('robot', this)">🤖 Robô</button>
-                        <button class="effect-btn" onclick="toggleEffect('echo', this)">🔊 Eco</button>
-                        <button class="effect-btn" onclick="toggleEffect('whisper', this)">🤫 Sussurro</button>
-                        <button class="effect-btn" onclick="toggleEffect('dramatic', this)">🎭 Dramático</button>
-                        <button class="effect-btn" onclick="toggleEffect('cheerful', this)">😊 Alegre</button>
-                        <button class="effect-btn" onclick="toggleEffect('serious', this)">😐 Sério</button>
-                    </div>
-                </div>
-
-                <div class="speaking-animation" id="speakingAnimation">
+                <div class="speaking-animation" id="speakingAnimation" style="display: none;">
                     <h3>🎙️ Falando...</h3>
                     <div class="voice-wave">
                         <div class="wave-bar"></div>
@@ -599,22 +595,26 @@
                         <div class="wave-bar"></div>
                         <div class="wave-bar"></div>
                     </div>
-                    <p>Reproduzindo seu texto com animações de voz</p>
+                </div>
+
+                <div id="micStatus" class="mic-status" style="display: none;">
+                    <span>🔴 O sistema está ouvindo...</span>
                 </div>
 
                 <div class="controls">
-                    <button class="btn btn-primary" onclick="speakText()">🔊 Reproduzir</button>
+                    <button class="btn btn-primary" id="playBtn" onclick="toggleSpeech()">🔊 Reproduzir</button>
+                    <button class="btn btn-primary" onclick="spellWord()">🔡 Soletrar</button>
+                    <button class="btn btn-success" onclick="generateAndSaveMP3()">💾 Salvar como MP3</button>
                     <button class="btn btn-secondary" onclick="stopSpeech()">⏹️ Parar</button>
-                    <button class="btn btn-success" onclick="generateAndSaveMP3()">💾 Gerar MP3</button>
-                </div>
-
-                <div class="waveform-visualizer" id="waveform" style="display: none;">
-                    <div class="waveform-bars" id="waveformBars"></div>
+                    <button class="btn btn-primary" onclick="toggleVoiceCommand()">
+                        <span id="mic-icon">🎙️</span>
+                        <span id="mic-text">Ativar Comando por Voz</span>
+                    </button>
                 </div>
 
                 <div id="ttsPlayer" class="audio-player" style="display: none;">
-                    <p>Áudio MP3 gerado:</p>
-                    <audio controls></audio>
+                    <p>Áudio gerado:</p>
+                    <audio id="ttsAudioPlayer" controls></audio>
                     <div class="controls">
                         <button class="btn btn-success" onclick="downloadCurrentMP3()">⬇️ Download MP3</button>
                     </div>
@@ -639,7 +639,7 @@
                     <button class="btn btn-success" onclick="saveRecordedMP3()" id="saveRecordBtn" style="display: none;">💾 Salvar MP3</button>
                 </div>
 
-                <div id="recordingStatus" class="recording-status">
+                <div id="recordingStatus" class="recording-status" style="display: none;">
                     🔴 Gravando... Fale agora!
                 </div>
 
@@ -649,37 +649,56 @@
 
                 <div id="recordPlayer" class="audio-player" style="display: none;">
                     <p>Gravação em MP3:</p>
-                    <audio controls></audio>
+                    <audio id="recordAudioPlayer" controls></audio>
                     <div class="controls">
                         <button class="btn btn-success" onclick="downloadRecordedMP3()">⬇️ Download MP3</button>
                     </div>
                 </div>
             </div>
-
-            <div id="transcribe" class="tab-content">
-                <h2>📝 Transcrever Áudio</h2>
+            
+            <div id="audio-generator" class="tab-content">
+                <h2>⚙️ Gerador de Áudios</h2>
+                <p>Gere áudios de números e letras para o jogo de bingo.</p>
+                
                 <div class="form-group">
-                    <label for="audioFile">Selecione um arquivo de áudio (MP3, WAV, OGG):</label>
-                    <input type="file" id="audioFile" accept="audio/*">
+                    <label for="generatorType">Tipo de Geração:</label>
+                    <select id="generatorType" onchange="toggleGeneratorOptions()">
+                        <option value="numbers">Gerar Números (1-100)</option>
+                        <option value="specific_numbers">Gerar Números Específicos</option>
+                        <option value="letters">Gerar Letras</option>
+                    </select>
                 </div>
-
-                <div class="controls">
-                    <button class="btn btn-primary" onclick="transcribeAudio()">🎯 Transcrever</button>
-                    <button class="btn btn-success" onclick="convertTranscriptionToMP3()" id="convertTranscriptionBtn" style="display: none;">🔊 Converter em MP3</button>
-                </div>
-
-                <div id="transcriptionLoading" class="loading" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Transcrevendo áudio... Aguarde.</p>
-                </div>
-
-                <div id="transcriptionResult" class="transcription-result" style="display: none;">
-                    <h3>📄 Transcrição:</h3>
-                    <p id="transcriptionText"></p>
-                    <div class="controls">
-                        <button class="btn btn-secondary" onclick="copyTranscription()">📋 Copiar Texto</button>
-                        <button class="btn btn-primary" onclick="editTranscription()">✏️ Editar</button>
+                
+                <div id="generatorOptions">
+                    <div id="numbers-options" class="active">
+                        <label>Gerar de: <input type="number" id="startNumber" value="1" min="1"></label>
+                        <label>até: <input type="number" id="endNumber" value="100" min="1"></label>
                     </div>
+                    
+                    <div id="specific-numbers-options">
+                        <label>Digite os números separados por vírgula (ex: 1, 15, 25):</label>
+                        <input type="text" id="specificNumbersInput" placeholder="Ex: 1, 15, 25">
+                    </div>
+                    
+                    <div id="letters-options">
+                        <label>Digite as letras separadas por vírgula (ex: B, I, N, G, O):</label>
+                        <input type="text" id="lettersInput" placeholder="Ex: B, I, N, G, O">
+                    </div>
+                </div>
+
+                <div class="controls" style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="generateAudioFiles()">▶️ Gerar Áudios MP3</button>
+                </div>
+                
+                <div id="generatorLoading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Gerando áudios... Aguarde!</p>
+                </div>
+                
+                <div id="generatedAudioList" class="saved-audios" style="display: none;">
+                    <h3>Áudios Gerados:</h3>
+                    <div id="generatedAudioItems"></div>
+                    <button class="btn btn-success" onclick="downloadAllGeneratedAudios()">⬇️ Baixar Todos</button>
                 </div>
             </div>
 
@@ -687,7 +706,6 @@
                 <h2>💾 Áudios MP3 Salvos</h2>
                 <div class="controls">
                     <button class="btn btn-danger" onclick="clearAllAudios()">🗑️ Limpar Todos</button>
-                    <button class="btn btn-primary" onclick="exportAllMP3s()">📤 Exportar Todos MP3</button>
                     <button class="btn btn-secondary" onclick="importMP3s()">📥 Importar MP3s</button>
                 </div>
 
@@ -699,6 +717,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <script>
         // Variáveis globais
@@ -708,12 +727,15 @@
         let savedAudios = JSON.parse(localStorage.getItem('savedAudios') || '[]');
         let speechSynthesis = window.speechSynthesis;
         let currentUtterance = null;
-        let currentTranscription = '';
-        let selectedGender = 'male';
-        let selectedEffects = [];
-        let mp3Quality = 'medium';
-        let recordQuality = 'medium';
         let currentMP3Blob = null;
+        let recognition;
+        let isVoiceCommandActive = false;
+        
+        // Dicionário de números para texto
+        const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+        const dezenas = ['', 'dez', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+        const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+        const centenas = ['', 'cem', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
 
         // Configurações de qualidade MP3
         const qualitySettings = {
@@ -727,42 +749,35 @@
             loadVoices();
             updateSavedAudiosList();
             setupRangeInputs();
-            createWaveformBars();
+            setupVoiceRecognition();
+            toggleGeneratorOptions();
         });
-
+        
+        // Pausar/Continuar reprodução de voz
+        function toggleSpeech() {
+            const playBtn = document.getElementById('playBtn');
+            if (speechSynthesis.paused) {
+                speechSynthesis.resume();
+                playBtn.textContent = '🔊 Reproduzir';
+            } else if (speechSynthesis.speaking) {
+                speechSynthesis.pause();
+                playBtn.textContent = '⏸️ Pausado';
+            } else {
+                speakText();
+            }
+        }
+        
         // Configurar inputs de range
         function setupRangeInputs() {
             document.getElementById('rateInput').addEventListener('input', function() {
                 document.getElementById('rateValue').textContent = this.value + 'x';
             });
-
             document.getElementById('pitchInput').addEventListener('input', function() {
                 document.getElementById('pitchValue').textContent = this.value;
             });
-
-            document.getElementById('volumeInput').addEventListener('input', function() {
-                document.getElementById('volumeValue').textContent = Math.round(this.value * 100) + '%';
-            });
         }
-
-        // Criar barras do visualizador de onda
-        function createWaveformBars() {
-            const containers = ['waveformBars', 'recordWaveformBars'];
-            containers.forEach(containerId => {
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.innerHTML = '';
-                    for (let i = 0; i < 50; i++) {
-                        const bar = document.createElement('div');
-                        bar.className = 'waveform-bar';
-                        bar.style.height = '5px';
-                        container.appendChild(bar);
-                    }
-                }
-            });
-        }
-
-        // Animar visualizador de onda
+        
+        // Animar o visualizador de onda (simulação)
         function animateWaveform(containerId, isActive) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -771,15 +786,13 @@
             
             if (isActive) {
                 const animate = () => {
-                    if ((containerId === 'waveformBars' && speechSynthesis.speaking) ||
-                        (containerId === 'recordWaveformBars' && mediaRecorder && mediaRecorder.state === 'recording')) {
-                        bars.forEach((bar, index) => {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        bars.forEach((bar) => {
                             const height = Math.random() * 40 + 5;
                             bar.style.height = height + 'px';
                         });
                         setTimeout(animate, 100);
                     } else {
-                        // Reseta a altura das barras quando a animação para
                         bars.forEach(bar => bar.style.height = '5px');
                     }
                 };
@@ -798,82 +811,19 @@
             
             voiceSelect.innerHTML = '';
             
-            const filteredVoices = voices.filter(voice => {
-                const isMale = voice.name.toLowerCase().includes('male') || 
-                              voice.name.toLowerCase().includes('masculin') ||
-                              voice.name.toLowerCase().includes('man') ||
-                              voice.name.toLowerCase().includes('david') ||
-                              voice.name.toLowerCase().includes('mark');
-                              
-                const isFemale = voice.name.toLowerCase().includes('female') || 
-                               voice.name.toLowerCase().includes('feminin') ||
-                               voice.name.toLowerCase().includes('woman') ||
-                               voice.name.toLowerCase().includes('zira') ||
-                               voice.name.toLowerCase().includes('samantha');
-                
-                if (selectedGender === 'male') return isMale || (!isMale && !isFemale);
-                return isFemale || (!isMale && !isFemale);
-            });
-            
-            filteredVoices.forEach((voice, index) => {
+            voices.forEach((voice, index) => {
                 const option = document.createElement('option');
-                option.value = voices.indexOf(voice);
+                option.value = index;
                 option.textContent = `${voice.name} (${voice.lang})`;
                 if (voice.lang.includes('pt')) {
                     option.selected = true;
                 }
                 voiceSelect.appendChild(option);
             });
-            
-            if (filteredVoices.length === 0) {
-                voices.forEach((voice, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = `${voice.name} (${voice.lang})`;
-                    if (voice.lang.includes('pt')) {
-                        option.selected = true;
-                    }
-                    voiceSelect.appendChild(option);
-                });
-            }
         }
 
         // Recarregar vozes quando disponíveis
         speechSynthesis.onvoiceschanged = loadVoices;
-
-        // Selecionar gênero da voz
-        function selectGender(gender, btn) {
-            selectedGender = gender;
-            document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            loadVoices();
-        }
-
-        // Selecionar qualidade MP3
-        function selectQuality(quality, btn) {
-            mp3Quality = quality;
-            document.querySelectorAll('#tts .quality-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        // Selecionar qualidade de gravação
-        function selectRecordQuality(quality, btn) {
-            recordQuality = quality;
-            document.querySelectorAll('#record .quality-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        // Alternar efeitos de voz
-        function toggleEffect(effect, btn) {
-            const index = selectedEffects.indexOf(effect);
-            if (index > -1) {
-                selectedEffects.splice(index, 1);
-                btn.classList.remove('active');
-            } else {
-                selectedEffects.push(effect);
-                btn.classList.add('active');
-            }
-        }
 
         // Abrir abas
         function openTab(tabId, btn) {
@@ -888,22 +838,48 @@
             btn.classList.add('active');
         }
         
-        // Função de efeito de voz (simulação)
-        function applyEffects(text) {
-            let processedText = text;
-            if (selectedEffects.includes('robot')) {
-                // Simulação simples de voz de robô (lenta e com pausas)
-                processedText = processedText.split('').join('. ').toUpperCase();
-            }
-            if (selectedEffects.includes('echo')) {
-                // Simulação de eco, adicionando repetição no final da palavra
-                processedText = processedText.replace(/(\w+)$/g, '$1...$1...');
-            }
-            // Outros efeitos seriam implementados com SSML (Speech Synthesis Markup Language)
-            return processedText;
+        // Função para mostrar e esconder opções do gerador
+        function toggleGeneratorOptions() {
+            const type = document.getElementById('generatorType').value;
+            document.querySelectorAll('#generatorOptions > div').forEach(div => {
+                div.classList.remove('active');
+            });
+            document.getElementById(type + '-options').classList.add('active');
         }
 
-        // Reproduzir texto para áudio
+        // --- Lógica de conversão de números para palavras ---
+        function numberToWords(num) {
+            num = parseInt(num, 10);
+            if (num === 0) return 'zero';
+            if (num < 0 || num > 999 || isNaN(num)) return null;
+
+            if (num < 10) {
+                return unidades[num];
+            }
+            if (num < 20) {
+                return especiais[num - 10];
+            }
+            if (num < 100) {
+                const dezena = dezenas[Math.floor(num / 10)];
+                const unidade = unidades[num % 10];
+                return unidade === '' ? dezena : `${dezena} e ${unidade}`;
+            }
+            if (num === 100) {
+                return 'cem';
+            }
+            const centena = centenas[Math.floor(num / 100)];
+            const resto = num % 100;
+            return `${centena} e ${numberToWords(resto)}`;
+        }
+
+        function processTextForNumbers(text) {
+            return text.replace(/\b(\d{1,3})\b/g, (match, number) => {
+                const words = numberToWords(number);
+                return words || match;
+            });
+        }
+        
+        // Função principal para reproduzir texto
         function speakText() {
             stopSpeech();
             const text = document.getElementById('textInput').value.trim();
@@ -912,7 +888,8 @@
                 return;
             }
 
-            const processedText = applyEffects(text);
+            const processedText = processTextForNumbers(text);
+            
             const utterance = new SpeechSynthesisUtterance(processedText);
             const voices = speechSynthesis.getVoices();
             const voiceIndex = document.getElementById('voiceSelect').value;
@@ -920,23 +897,21 @@
             utterance.voice = voices[voiceIndex];
             utterance.rate = document.getElementById('rateInput').value;
             utterance.pitch = document.getElementById('pitchInput').value;
-            utterance.volume = document.getElementById('volumeInput').value;
 
             utterance.onstart = () => {
                 document.getElementById('speakingAnimation').style.display = 'block';
-                document.getElementById('waveform').style.display = 'block';
-                animateWaveform('waveformBars', true);
+                document.getElementById('playBtn').textContent = '⏸️ Pausar';
             };
 
             utterance.onend = () => {
                 document.getElementById('speakingAnimation').style.display = 'none';
-                animateWaveform('waveformBars', false);
+                document.getElementById('playBtn').textContent = '🔊 Reproduzir';
             };
 
             utterance.onerror = (event) => {
                 console.error('Erro na síntese de voz:', event.error);
                 document.getElementById('speakingAnimation').style.display = 'none';
-                alert('Ocorreu um erro na síntese de voz.');
+                document.getElementById('playBtn').textContent = '🔊 Reproduzir';
             };
 
             currentUtterance = utterance;
@@ -949,37 +924,143 @@
                 speechSynthesis.cancel();
             }
             document.getElementById('speakingAnimation').style.display = 'none';
-            animateWaveform('waveformBars', false);
+            document.getElementById('playBtn').textContent = '🔊 Reproduzir';
         }
 
-        // Gerar e salvar MP3 do texto
+        // Gerar e salvar MP3 do texto (aviso para o usuário)
         function generateAndSaveMP3() {
             const text = document.getElementById('textInput').value.trim();
             if (!text) {
                 alert('Por favor, digite algum texto para converter.');
                 return;
             }
-
-            // O navegador não oferece uma API nativa e confiável para capturar o áudio gerado pelo SpeechSynthesis.
-            // Para fazer isso, seria necessário usar uma biblioteca ou um serviço de terceiros.
-            // Esta função é uma simulação para fins de demonstração.
-            alert('A função de gerar MP3 do texto para fala não está disponível de forma confiável em todos os navegadores. Usando um placeholder.');
-            
-            // Simulação de conversão para MP3
-            const dummyBlob = new Blob(['Dummy MP3 Data'], { type: 'audio/mp3' });
-            currentMP3Blob = dummyBlob;
-            const audioPlayer = document.querySelector('#ttsPlayer audio');
-            audioPlayer.src = URL.createObjectURL(dummyBlob);
-            document.getElementById('ttsPlayer').style.display = 'block';
-            saveAudio(dummyBlob, 'tts');
-            alert('Áudio MP3 gerado e salvo!');
+            alert('A função de gerar MP3 a partir da voz do navegador não está disponível. Use a gravação para salvar em MP3.');
         }
 
-        // Iniciar gravação de áudio
+        // Função de soletração
+        function spellWord() {
+            stopSpeech();
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('Por favor, digite uma palavra para soletrar.');
+                return;
+            }
+
+            const letters = text.replace(/[^a-zA-Z]/g, '').toUpperCase().split('');
+            const speakNextLetter = (index) => {
+                if (index >= letters.length) {
+                    document.getElementById('speakingAnimation').style.display = 'none';
+                    return;
+                }
+                const letter = letters[index];
+                const utterance = new SpeechSynthesisUtterance(letter);
+                const voices = speechSynthesis.getVoices();
+                const voiceIndex = document.getElementById('voiceSelect').value;
+
+                utterance.voice = voices[voiceIndex];
+                utterance.rate = document.getElementById('rateInput').value;
+                utterance.pitch = document.getElementById('pitchInput').value;
+
+                utterance.onstart = () => {
+                    document.getElementById('speakingAnimation').style.display = 'block';
+                };
+                utterance.onend = () => {
+                    setTimeout(() => speakNextLetter(index + 1), 300);
+                };
+                speechSynthesis.speak(utterance);
+            };
+            speakNextLetter(0);
+        }
+
+        // --- Lógica de Comando por Voz ---
+        function setupVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.lang = 'pt-BR';
+                recognition.continuous = true;
+                recognition.interimResults = false;
+
+                recognition.onstart = () => {
+                    isVoiceCommandActive = true;
+                    document.getElementById('micStatus').style.display = 'block';
+                    document.getElementById('mic-icon').textContent = '🔴';
+                    document.getElementById('mic-text').textContent = 'Ouvindo...';
+                };
+
+                recognition.onend = () => {
+                    isVoiceCommandActive = false;
+                    document.getElementById('micStatus').style.display = 'none';
+                    document.getElementById('mic-icon').textContent = '🎙️';
+                    document.getElementById('mic-text').textContent = 'Ativar Comando por Voz';
+                };
+                
+                recognition.onerror = (event) => {
+                    console.error('Erro no reconhecimento de voz:', event.error);
+                    alert('Erro no reconhecimento de voz. Verifique as permissões do microfone.');
+                    isVoiceCommandActive = false;
+                    document.getElementById('micStatus').style.display = 'none';
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+                    processVoiceCommand(transcript);
+                };
+            } else {
+                alert('O reconhecimento de voz não é suportado por este navegador.');
+            }
+        }
+
+        function toggleVoiceCommand() {
+            if (isVoiceCommandActive) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function processVoiceCommand(command) {
+            console.log('Comando recebido:', command);
+
+            if (command.includes('limpar texto') || command.includes('apagar texto')) {
+                document.getElementById('textInput').value = '';
+                speakFullText('Texto limpo.');
+                return;
+            }
+
+            if (command.includes('reproduzir')) {
+                speakText();
+                return;
+            }
+            
+            if (command) {
+                document.getElementById('textInput').value = command;
+            }
+        }
+
+        // Função de fala para a assistente (opcional)
+        function speakFullText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                const ptVoice = voices.find(v => v.lang.includes('pt'));
+                if (ptVoice) {
+                    utterance.voice = ptVoice;
+                }
+            }
+            speechSynthesis.speak(utterance);
+        }
+
+        // --- Funções de Gravação e Gerenciamento ---
+        
+        function selectRecordQuality(quality, btn) {
+            document.querySelectorAll('#record .quality-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            recordQuality = quality;
+        }
+
         function startRecording() {
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(stream => {
-                    // Tenta o formato padrão do navegador, que geralmente é WebM ou Ogg
                     const options = { mimeType: 'audio/webm' };
                     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
                         options.mimeType = 'audio/ogg';
@@ -998,10 +1079,9 @@
                     mediaRecorder.onstop = () => {
                         const audioBlob = new Blob(audioChunks, { type: options.mimeType });
                         
-                        // Converte o áudio gravado (normalmente WebM/Ogg) para MP3
                         convertToMP3(audioBlob, recordQuality, mp3Blob => {
                             currentAudioBlob = mp3Blob;
-                            const audioPlayer = document.querySelector('#recordPlayer audio');
+                            const audioPlayer = document.getElementById('recordAudioPlayer');
                             audioPlayer.src = URL.createObjectURL(mp3Blob);
                             document.getElementById('recordPlayer').style.display = 'block';
                             document.getElementById('saveRecordBtn').style.display = 'inline-flex';
@@ -1023,7 +1103,6 @@
                 });
         }
 
-        // Parar gravação de áudio
         function stopRecording() {
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
@@ -1034,20 +1113,17 @@
             animateWaveform('recordWaveformBars', false);
         }
 
-        // Função para converter para MP3 usando LAME.js
         function convertToMP3(audioBlob, quality, callback) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const arrayBuffer = event.target.result;
                 const { bitRate, sampleRate } = qualitySettings[quality];
 
-                // Decodifica o áudio para PCM (necessário para o LAME.js)
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 audioContext.decodeAudioData(arrayBuffer).then(audioBuffer => {
                     const pcmData = audioBuffer.getChannelData(0);
                     const samples = new Int16Array(pcmData.length);
                     
-                    // Converte float32 para int16
                     for (let i = 0; i < pcmData.length; i++) {
                         samples[i] = pcmData[i] * 32767;
                     }
@@ -1078,78 +1154,13 @@
             reader.readAsArrayBuffer(audioBlob);
         }
 
-        // Transcrever áudio (simulação)
-        function transcribeAudio() {
-            const fileInput = document.getElementById('audioFile');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Por favor, selecione um arquivo de áudio.');
-                return;
-            }
-
-            document.getElementById('transcriptionResult').style.display = 'none';
-            document.getElementById('transcriptionLoading').style.display = 'block';
-
-            // ATENÇÃO: A transcrição de áudio em tempo real ou de arquivos
-            // é uma tarefa complexa que requer uma API de serviço de voz (como
-            // a API do Google Speech-to-Text, OpenAI Whisper, etc.)
-            // A seguir, temos uma SIMULAÇÃO para fins de demonstração.
-
-            setTimeout(() => {
-                const dummyText = "Esta é uma transcrição de exemplo. O áudio selecionado foi processado e este é o texto resultante. Ele pode ser copiado, editado ou convertido de volta para áudio.";
-                currentTranscription = dummyText;
-                document.getElementById('transcriptionText').textContent = dummyText;
-                document.getElementById('transcriptionLoading').style.display = 'none';
-                document.getElementById('transcriptionResult').style.display = 'block';
-                document.getElementById('convertTranscriptionBtn').style.display = 'inline-flex';
-            }, 2000);
-        }
-
-        // Copiar transcrição
-        function copyTranscription() {
-            const text = document.getElementById('transcriptionText').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Texto copiado para a área de transferência!');
-            }).catch(err => {
-                console.error('Erro ao copiar texto:', err);
-            });
-        }
-        
-        // Editar transcrição
-        function editTranscription() {
-            const currentText = document.getElementById('transcriptionText').textContent;
-            const newText = prompt('Edite a transcrição:', currentText);
-            if (newText !== null) {
-                currentTranscription = newText;
-                document.getElementById('transcriptionText').textContent = newText;
-            }
-        }
-        
-        // Converter transcrição para MP3
-        function convertTranscriptionToMP3() {
-            const textToConvert = currentTranscription || document.getElementById('transcriptionText').textContent;
-            if (!textToConvert) {
-                alert('Nenhum texto para converter. Transcreva um áudio primeiro.');
-                return;
-            }
-            document.getElementById('textInput').value = textToConvert;
-            openTab('tts', document.querySelector('.tab-button[onclick*="tts"]'));
-            
-            // Gerar o MP3 do texto transcrito automaticamente
-            speakText(); // Apenas reproduz, não salva de forma confiável
-            alert('Texto transcrito copiado para a aba "Texto para Áudio". Clique em "Gerar MP3" para salvar.');
-        }
-
-        // Salvar áudio no armazenamento local
-        function saveAudio(blob, type) {
-            // ATENÇÃO: O armazenamento de blobs grandes em localStorage pode causar erros.
-            // Considere usar IndexedDB para grandes arquivos de áudio.
+        function saveAudio(blob, type, name) {
             const reader = new FileReader();
             reader.onloadend = function() {
                 const base64data = reader.result;
                 const audio = {
                     id: Date.now(),
-                    name: `Audio ${savedAudios.length + 1} (${type})`,
+                    name: name || `Audio ${savedAudios.length + 1} (${type})`,
                     date: new Date().toLocaleDateString('pt-BR'),
                     blob: base64data,
                     type: type
@@ -1161,7 +1172,6 @@
             reader.readAsDataURL(blob);
         }
 
-        // Salvar MP3 gravado
         function saveRecordedMP3() {
             if (currentAudioBlob) {
                 saveAudio(currentAudioBlob, 'record');
@@ -1172,7 +1182,6 @@
             }
         }
         
-        // Atualizar lista de áudios salvos
         function updateSavedAudiosList() {
             const list = document.getElementById('savedAudiosList');
             if (savedAudios.length === 0) {
@@ -1199,7 +1208,6 @@
             });
         }
 
-        // Reproduzir áudio salvo
         function playSavedAudio(id) {
             const audio = savedAudios.find(a => a.id == id);
             if (audio) {
@@ -1213,7 +1221,6 @@
             }
         }
 
-        // Baixar áudio salvo
         function downloadSavedAudio(id) {
             const audio = savedAudios.find(a => a.id == id);
             if (audio) {
@@ -1227,7 +1234,6 @@
             }
         }
 
-        // Deletar áudio salvo
         function deleteSavedAudio(id) {
             if (confirm('Tem certeza de que deseja excluir este áudio?')) {
                 savedAudios = savedAudios.filter(a => a.id != id);
@@ -1236,24 +1242,21 @@
             }
         }
 
-        // Limpar todos os áudios
         function clearAllAudios() {
             if (confirm('Tem certeza de que deseja limpar todos os áudios salvos? Esta ação não pode ser desfeita.')) {
                 savedAudios = [];
                 localStorage.removeItem('savedAudios');
                 updateSavedAudiosList();
-                alert('Todos os áudios foram removidos.');
             }
         }
 
-        // Baixar MP3 gerado por TTS
         function downloadCurrentMP3() {
             if (currentMP3Blob) {
                 const url = URL.createObjectURL(currentMP3Blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'audio_tts.mp3';
+                a.download = 'audio_gerado.mp3';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -1263,7 +1266,6 @@
             }
         }
 
-        // Baixar MP3 gravado
         function downloadRecordedMP3() {
             if (currentAudioBlob) {
                 const url = URL.createObjectURL(currentAudioBlob);
@@ -1280,16 +1282,6 @@
             }
         }
 
-        // Exportar todos os MP3s (simulação)
-        function exportAllMP3s() {
-            if (savedAudios.length === 0) {
-                alert('Nenhum áudio para exportar.');
-                return;
-            }
-            alert('A funcionalidade de exportação de todos os MP3s como um único arquivo ZIP seria implementada aqui, mas requer uma biblioteca de terceiros.');
-        }
-
-        // Importar MP3s
         function importMP3s() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -1325,7 +1317,6 @@
             input.click();
         }
         
-        // Função auxiliar para converter Data URL para Blob
         function dataURLtoBlob(dataurl) {
             const arr = dataurl.split(',');
             const mime = arr[0].match(/:(.*?);/)[1];
@@ -1336,6 +1327,176 @@
                 u8arr[n] = bstr.charCodeAt(n);
             }
             return new Blob([u8arr], { type: mime });
+        }
+        
+        // --- Novas funções para a aba Gerador de Áudios ---
+        
+        let generatedBlobs = [];
+        
+        async function generateAudioFiles() {
+            const type = document.getElementById('generatorType').value;
+            const loadingDiv = document.getElementById('generatorLoading');
+            const listDiv = document.getElementById('generatedAudioItems');
+            
+            loadingDiv.style.display = 'block';
+            listDiv.innerHTML = '';
+            generatedBlobs = [];
+            
+            let itemsToGenerate = [];
+
+            if (type === 'numbers') {
+                const start = parseInt(document.getElementById('startNumber').value);
+                const end = parseInt(document.getElementById('endNumber').value);
+                for (let i = start; i <= end; i++) {
+                    itemsToGenerate.push({
+                        text: numberToWords(i),
+                        name: `Número ${i}`
+                    });
+                }
+            } else if (type === 'specific_numbers') {
+                const input = document.getElementById('specificNumbersInput').value;
+                const numbers = input.split(',').map(n => n.trim()).filter(n => n !== '');
+                numbers.forEach(num => {
+                    itemsToGenerate.push({
+                        text: numberToWords(parseInt(num, 10)),
+                        name: `Número ${num}`
+                    });
+                });
+            } else if (type === 'letters') {
+                const input = document.getElementById('lettersInput').value;
+                const letters = input.toUpperCase().split(',').map(l => l.trim()).filter(l => l !== '');
+                letters.forEach(letter => {
+                    itemsToGenerate.push({
+                        text: letter,
+                        name: `Letra ${letter}`
+                    });
+                });
+            }
+
+            for (const item of itemsToGenerate) {
+                try {
+                    const blob = await new Promise(resolve => {
+                        generateTTSBlob(item.text, resolve);
+                    });
+                    generatedBlobs.push({
+                        name: item.name,
+                        blob: blob
+                    });
+                } catch (error) {
+                    console.error('Erro ao gerar áudio:', error);
+                }
+            }
+
+            loadingDiv.style.display = 'none';
+            document.getElementById('generatedAudioList').style.display = 'block';
+            
+            generatedBlobs.forEach((item, index) => {
+                const audioItem = document.createElement('div');
+                audioItem.className = 'audio-item';
+                audioItem.innerHTML = `
+                    <div class="audio-info">
+                        <div class="audio-title">${item.name}</div>
+                    </div>
+                    <div class="audio-actions">
+                        <button class="btn btn-primary" onclick="playGeneratedAudio(${index})">▶️ Play</button>
+                        <button class="btn btn-secondary" onclick="downloadGeneratedAudio(${index})">⬇️ Download</button>
+                        <button class="btn btn-success" onclick="saveGeneratedAudio(${index})">💾 Salvar</button>
+                    </div>
+                `;
+                listDiv.appendChild(audioItem);
+            });
+            alert('Áudios gerados com sucesso!');
+        }
+        
+        function playGeneratedAudio(index) {
+            const audio = generatedBlobs[index];
+            if (audio) {
+                const url = URL.createObjectURL(audio.blob);
+                const tempAudio = new Audio(url);
+                tempAudio.play();
+            }
+        }
+        
+        function downloadGeneratedAudio(index) {
+            const audio = generatedBlobs[index];
+            if (audio) {
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = URL.createObjectURL(audio.blob);
+                a.download = `${audio.name.replace(/ /g, '_')}.mp3`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+
+        function downloadAllGeneratedAudios() {
+            if (generatedBlobs.length === 0) {
+                alert('Nenhum áudio para baixar.');
+                return;
+            }
+            
+            const zip = new JSZip();
+            const folder = zip.folder("audios-gerados");
+
+            generatedBlobs.forEach(item => {
+                folder.file(`${item.name}.mp3`, item.blob);
+            });
+
+            zip.generateAsync({ type: "blob" }).then(content => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(content);
+                a.download = "audios_bingo.zip";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        }
+
+        function saveGeneratedAudio(index) {
+            const audio = generatedBlobs[index];
+            if (audio) {
+                saveAudio(audio.blob, 'generated', audio.name);
+                alert(`Áudio "${audio.name}" salvo na biblioteca!`);
+            }
+        }
+
+        // FUNÇÃO ATUALIZADA E CORRIGIDA
+        function generateTTSBlob(text, callback) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = speechSynthesis.getVoices();
+            const voiceIndex = document.getElementById('voiceSelect').value;
+            
+            utterance.voice = voices[voiceIndex];
+            utterance.rate = document.getElementById('rateInput').value;
+            utterance.pitch = document.getElementById('pitchInput').value;
+            
+            const mediaStreamDestination = audioContext.createMediaStreamDestination();
+            const mediaRecorder = new MediaRecorder(mediaStreamDestination.stream);
+            
+            const chunks = [];
+            mediaRecorder.ondataavailable = (event) => {
+                chunks.push(event.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+                // Agora, converte o Blob WebM para MP3 antes de executar o callback
+                convertToMP3(audioBlob, 'medium', (mp3Blob) => {
+                    callback(mp3Blob);
+                });
+            };
+
+            mediaRecorder.start();
+            speechSynthesis.speak(utterance);
+            
+            utterance.onend = () => {
+                // Pequeno delay para garantir que a gravação capture todo o áudio
+                setTimeout(() => {
+                    mediaRecorder.stop();
+                }, 100); 
+            };
         }
     </script>
 </body>
